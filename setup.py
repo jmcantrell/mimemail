@@ -5,7 +5,7 @@ from glob import glob
 
 setup(
         name='MIMEMail',
-        version='0.2.11',
+        version='0.2.12',
         description='Command line MUA using the MIME message format.',
         author='Jeremy Cantrell',
         author_email='jmcantrell@gmail.com',

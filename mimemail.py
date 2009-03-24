@@ -51,6 +51,7 @@ from email.header import Header
 from email.utils import parseaddr, formataddr
 
 # FUNCTIONS {{{1
+
 def get_options(): #{{{2
     opts = Options('Usage: %prog [options] [file...]', width=40)
     opts.add_option('-h', '--help', help='Show this help message and exit.', action='help')
@@ -110,7 +111,9 @@ def main(): #{{{2
     smtp = smtp_session(opts.server, opts.port, opts.username, opts.password, opts.tls)
     mail.send(smtp, opts.subject, opts.sender)
 
+
 # CLASSES {{{1
+
 class MIMEMail(object): #{{{2
 
     def __init__(self):
@@ -163,8 +166,7 @@ class MIMEMail(object): #{{{2
         self.message['From'] = format_address(sender)
         self.message['Subject'] = self.message.preamble = encode_header(subject)
         self.message.epilogue = ''
-        recipients = [v for k, v in self.recipients.iteritems() if k in self.recipient_types]
-        smtp.sendmail(sender, format_address(recipients), self.message.as_string())
+        smtp.sendmail(sender, sum(self.recipients.values(), []), self.message.as_string())
 
 
 
