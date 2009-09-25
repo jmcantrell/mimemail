@@ -22,7 +22,7 @@ setup(
             'Topic :: Utilities',
             ],
         install_requires=[
-            'ScriptUtils>=0.3',
+            'ScriptUtils>=0.5',
             ],
         entry_points={
             'console_scripts': [
