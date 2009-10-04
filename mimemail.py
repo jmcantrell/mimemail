@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # DESCRIPTION {{{
+
 """Command line mail user agent using MIME as the message format.
 
 The message body is given over stdin, as a string (--body-text), or as a
@@ -12,11 +13,9 @@ available options, run the following command at the command line:
 Some examples of typical usage:
 
     Send the output of a command:
-
         cmd | mimemail -t spam@eggs.com
 
     Do the same, but with attachments:
-
         cmd | mimemail -t spam@eggs.com stuff.zip document.pdf
 
 MIMEMail can also be used in other python scripts:
@@ -32,7 +31,7 @@ MIMEMail can also be used in other python scripts:
 """ #}}}
 
 __author__  = 'Jeremy Cantrell <jmcantrell@gmail.com>'
-__url__     = 'http://jeremycantrell.com'
+__url__     = 'http://jmcantrell.me'
 __date__    = 'Tue 2008-02-05 14:55:05 (-0500)'
 __license__ = 'GPL'
 
