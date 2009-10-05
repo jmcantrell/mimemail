@@ -10,7 +10,7 @@ setup(
         author='Jeremy Cantrell',
         author_email='jmcantrell@gmail.com',
         classifiers=[
-            'Development Status :: 3 - Alpha',
+            'Development Status :: 4 - Beta',
             'Environment :: Console',
             'Intended Audience :: System Administrators',
             'License :: OSI Approved :: GNU General Public License (GPL)',
@@ -22,7 +22,7 @@ setup(
             'Topic :: Utilities',
             ],
         install_requires=[
-            'ScriptUtils>=0.5',
+            'ScriptUtils',
             ],
         entry_points={
             'console_scripts': [
