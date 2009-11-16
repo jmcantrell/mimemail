@@ -23,13 +23,14 @@ MIMEMail can also be used in other python scripts:
     from mimemail import MIMEMail
 
     mail = MIMEMail()
-    mail.set_recipients(['spam@eggs.com', 'Michael Spam Palin <michael@spam.org>'])
+    mail.set_recipients(['spam@eggs.com', 'Jim Generic <jim@email.org>'])
     mail.set_body(open('body.txt').read())
     mail.set_attachments(['stuff.zip', 'image.png'])
     mail.send(subject="Here's Your Stuff")
 
 """ #}}}
 
+__appname__ = 'MIMEMail'
 __author__  = 'Jeremy Cantrell <jmcantrell@gmail.com>'
 __url__     = 'http://jmcantrell.me'
 __date__    = 'Tue 2008-02-05 14:55:05 (-0500)'
@@ -39,81 +40,85 @@ import sys, os, mimetypes, smtplib
 from os.path import basename
 from scriptutils.options import Options
 from email.encoders import encode_base64
-from email.mime.audio import MIMEAudio
-from email.mime.base import MIMEBase
-from email.mime.image import MIMEImage
-from email.mime.application import MIMEApplication
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.message import MIMEMessage
 from email.header import Header
 from email.utils import parseaddr, formataddr
 
-# FUNCTIONS {{{1
+from email.mime.audio       import MIMEAudio
+from email.mime.base        import MIMEBase
+from email.mime.image       import MIMEImage
+from email.mime.application import MIMEApplication
+from email.mime.multipart   import MIMEMultipart
+from email.mime.text        import MIMEText
+from email.mime.message     import MIMEMessage
 
-def get_options(): #{{{2
-    opts = Options('Usage: %prog [options] [file...]', width=40)
-    opts.add_option('-h', '--help', help='Show this help message and exit.', action='help')
-    opts.add_option('-s', '--subject', help='Email subject')
-    opts.add_option('-t', '--to', default='', help='Email recipients (comma-separated)')
+def get_options(): #{{{1
+    opts = Options(args='[file...]', width=40)
+    opts.add_option('-s', '--subject', help='Email subject.')
+    opts.add_option('-t', '--to', action='append', help='Email recipient.')
     opts.add_option('-f', '--sender', help='Email sender')
-    opts.add_option('--cc', default='', help='Email CC recipients (comma-separated)')
-    opts.add_option('--bcc', default='', help='Email BCC recipients (comma-separated)')
-    opts.add_option('--body-text', help='Email body (from string)')
-    opts.add_option('--body-file', help='Email body (from file)')
-    opts.add_option('--server', help='SMTP server (default: localhost)')
-    opts.add_option('-p', '--port', type='int', help='SMTP server port (default: 25)')
-    opts.add_option('-U', '--username', help='SMTP server username')
-    opts.add_option('-P', '--password', help='SMTP server password')
+    opts.add_option('--cc', action='append', help='Email CC recipient.')
+    opts.add_option('--bcc', action='append', help='Email BCC recipients.')
+    opts.add_option('--body-text', help='Email body (from string).')
+    opts.add_option('--body-file', help='Email body (from file).')
+    opts.add_option('--server', default='localhost', help='SMTP server (default: localhost).')
+    opts.add_option('-p', '--port', type='int', default=25, help='SMTP server port (default: 25).')
+    opts.add_option('-U', '--username', help='SMTP server username.')
+    opts.add_option('-P', '--password', help='SMTP server password.')
     opts.add_option('--tls', action='store_true', default=False, help='Use TLS with SMTP server')
     return opts.parse_args()
 
-def get_username(): #{{{2
+def get_username(): #{{{1
     if sys.platform.startswith('win'): return
     import pwd
     return pwd.getpwuid(os.geteuid())[0]
 
-def smtp_session(server=None, port=None, username=None, password=None, tls=False): #{{{2
-    """Creates an SMTP session that defaults to localhost:25 with no authentication or encryption."""
-    session = smtplib.SMTP(server or 'localhost', port or 25)
+def smtp_session(server='localhost', port=25, tls=False, username=None, password=None): #{{{1
+    session = smtplib.SMTP(server, port)
     if tls:
         session.ehlo()
         session.starttls()
         session.ehlo()
-    if username and password: session.login(username, password)
+    if username and password:
+        session.login(username, password)
     return session
 
-def encode_header(value): #{{{2
+def encode_header(value): #{{{1
     """Creates a string that's properly encoded for use in an email header."""
     return str(Header(unicode(value), 'iso-8859-1'))
 
-def format_address(value): #{{{2
+def format_address(value): #{{{1
     """Properly formats email addresses."""
-    if type(value) in (tuple, list): return ', '.join([format_address(v) for v in value])
+    if type(value) in (tuple, list):
+        return ', '.join([format_address(v) for v in value])
     name, addr = parseaddr(value)
     return formataddr((encode_header(name), addr.encode('ascii')))
 
-def main(): #{{{2
+def main(): #{{{1
     opts, args = get_options()
     mail = MIMEMail()
     # Determine from what source we will be getting the message body.
-    if opts.body_text:   body = opts.body_text
-    elif opts.body_file: body = open(opts.body_file).read()
-    else:                body = sys.stdin.read()
+    if    opts.body_text: body = opts.body_text
+    elif  opts.body_file: body = open(opts.body_file).read()
+    else:                 body = sys.stdin.read()
     mail.set_body(unicode(body, encoding='utf-8'))
     # Multiple addresses can be provided as a comma separated string.
-    if opts.to:  mail.recipients['to']  = [a.strip() for a in opts.to.split(',')]
-    if opts.cc:  mail.recipients['cc']  = [a.strip() for a in opts.cc.split(',')]
-    if opts.bcc: mail.recipients['bcc'] = [a.strip() for a in opts.bcc.split(',')]
+    mail.recipients['to']  = opts.to
+    mail.recipients['cc']  = opts.cc
+    mail.recipients['bcc'] = opts.bcc
     # Attachments are provided as command line arguments.
     if args: mail.set_attachments(args)
-    smtp = smtp_session(opts.server, opts.port, opts.username, opts.password, opts.tls)
+    smtp = smtp_session(
+            server=opts.server,
+            port=opts.port,
+            tls=opts.tls,
+            username=opts.username,
+            password=opts.password,
+            )
     mail.send(smtp, opts.subject, opts.sender)
 
+#}}}1
 
-# CLASSES {{{1
-
-class MIMEMail(object): #{{{2
+class MIMEMail(object): #{{{1
 
     def __init__(self):
         self.message = MIMEMultipart()
@@ -133,7 +138,8 @@ class MIMEMail(object): #{{{2
     def set_recipients(self, recipients, key=None):
         if not key: key = 'to'
         key = key.lower()
-        if key not in self.recipient_types: raise MIMEMailError("Invalid recipient type")
+        if key not in self.recipient_types:
+            raise MIMEMailError("Invalid recipient type")
         if type(recipients) not in (tuple, list): recipients = [recipients]
         self.recipients[key] = recipients
 
@@ -145,12 +151,15 @@ class MIMEMail(object): #{{{2
                 ctype = 'application/octet-stream'
             maintype, subtype = ctype.split('/', 1)
             data = open(path, 'rb').read()
-            if   maintype == 'text':        attachment = MIMEText(data, subtype)
-            elif maintype == 'image':       attachment = MIMEImage(data, subtype)
-            elif maintype == 'audio':       attachment = MIMEAudio(data, subtype)
-            elif maintype == 'message':     attachment = MIMEMessage(data, subtype)
-            elif maintype == 'application': attachment = MIMEApplication(data, subtype)
-            else:
+            try:
+                attachment = {
+                        'text':        MIMEText,
+                        'image':       MIMEImage,
+                        'audio':       MIMEAudio,
+                        'message':     MIMEMessage,
+                        'application': MIMEApplication,
+                        }[maintype](data, subtype)
+            except KeyError:
                 attachment = MIMEBase(maintype, subtype)
                 attachment.set_payload(data)
                 encode_base64(attachment)
@@ -160,17 +169,21 @@ class MIMEMail(object): #{{{2
     def send(self, smtp=None, subject='', sender=None):
         if not smtp: smtp = smtp_session()
         if not sender: sender = get_username()
-        if 'to' in self.recipients: self.message['To'] = format_address(self.recipients['to'])
-        if 'cc' in self.recipients: self.message['CC'] = format_address(self.recipients['cc'])
+        if 'to' in self.recipients:
+            self.message['To'] = format_address(self.recipients['to'])
+        if 'cc' in self.recipients:
+            self.message['CC'] = format_address(self.recipients['cc'])
         self.message['From'] = format_address(sender)
-        self.message['Subject'] = self.message.preamble = encode_header(subject)
+        s = encode_header(subject)
+        self.message['Subject'] = s
+        self.message.preamble = s
         self.message.epilogue = ''
         smtp.sendmail(sender, sum(self.recipients.values(), []), self.message.as_string())
 
 
 
-class MIMEMailError(Exception): pass #{{{2
+class MIMEMailError(Exception): pass #{{{1
 
-#}}}
+#}}}1
 
 if __name__ == '__main__': main()
