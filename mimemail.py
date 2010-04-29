@@ -33,8 +33,8 @@ MIMEMail can also be used in other python scripts:
 __appname__ = 'MIMEMail'
 __author__  = 'Jeremy Cantrell <jmcantrell@gmail.com>'
 __url__     = 'http://jmcantrell.me'
-__date__    = 'Tue 2008-02-05 14:55:05 (-0500)'
-__license__ = 'GPL'
+__date__    = 'Fri 2010-04-23 13:07:50 (-0400)'
+__license__ = 'BSD'
 
 import sys, os, mimetypes, smtplib
 from os.path import basename
