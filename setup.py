@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
         name='MIMEMail',
-        version='0.3.0',
+        version='0.4.0',
         description='Command line MUA using the MIME message format.',
         author='Jeremy Cantrell',
         author_email='jmcantrell@gmail.com',

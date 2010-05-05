@@ -30,12 +30,6 @@ MIMEMail can also be used in other python scripts:
 
 """ #}}}
 
-__appname__ = 'MIMEMail'
-__author__  = 'Jeremy Cantrell <jmcantrell@gmail.com>'
-__url__     = 'http://jmcantrell.me'
-__date__    = 'Fri 2010-04-23 13:07:50 (-0400)'
-__license__ = 'BSD'
-
 import sys, os, mimetypes, smtplib
 from os.path import basename
 from scriptutils.options import Options
@@ -134,6 +128,15 @@ class MIMEMail(object): #{{{1
             else:
                 break
         self.message.attach(body)
+
+    def set_to(self, recipients):
+        self.set_recipients(recipients, 'to')
+
+    def set_cc(self, recipients):
+        self.set_recipients(recipients, 'cc')
+
+    def set_bcc(self, recipients):
+        self.set_recipients(recipients, 'bcc')
 
     def set_recipients(self, recipients, key=None):
         if not key: key = 'to'
