@@ -31,8 +31,8 @@ MIMEMail can also be used in other python scripts:
 """ #}}}
 
 import sys, os, mimetypes, smtplib
-from os.path import basename
 from scriptutils.options import Options
+from unicodeutils import decode, encode
 from email.encoders import encode_base64
 from email.header import Header
 from email.utils import parseaddr, formataddr
@@ -94,7 +94,7 @@ def main(): #{{{1
     if    opts.body_text: body = opts.body_text
     elif  opts.body_file: body = open(opts.body_file).read()
     else:                 body = sys.stdin.read()
-    mail.set_body(unicode(body, encoding='utf-8'))
+    mail.set_body(body)
     # Multiple addresses can be provided as a comma separated string.
     mail.recipients['to']  = opts.to
     mail.recipients['cc']  = opts.cc
@@ -120,6 +120,7 @@ class MIMEMail(object): #{{{1
         self.recipient_types = ('to', 'cc', 'bcc')
 
     def set_body(self, body):
+        body = decode(body)
         for body_charset in 'ascii', 'iso-8859-1', 'utf-8':
             try:
                 body = MIMEText(body.encode(body_charset), 'plain', body_charset)
@@ -166,7 +167,8 @@ class MIMEMail(object): #{{{1
                 attachment = MIMEBase(maintype, subtype)
                 attachment.set_payload(data)
                 encode_base64(attachment)
-            attachment.add_header('Content-Disposition', 'attachment', filename=basename(path))
+            attachment.add_header('Content-Disposition', 'attachment',
+                    filename=os.path.basename(path))
             self.message.attach(attachment)
 
     def send(self, smtp=None, subject='', sender=None):
