@@ -181,7 +181,8 @@ class MIMEMail(object): #{{{1
         self.message['Subject'] = s
         self.message.preamble = s
         self.message.epilogue = ''
-        smtp.sendmail(sender, sum(self.recipients.values(), []), self.message.as_string())
+        recipients = sum((r for r in self.recipients.values() if r), [])
+        smtp.sendmail(sender, recipients, self.message.as_string())
 
 
 
