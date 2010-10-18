@@ -31,7 +31,7 @@ MIMEMail can also be used in other python scripts:
 """ #}}}
 
 import sys, os, mimetypes, smtplib
-from scriptutils.options import Options
+from argparse import ArgumentParser
 from unicodeutils import decode, encode
 from email.encoders import encode_base64
 from email.header import Header
@@ -46,19 +46,20 @@ from email.mime.text        import MIMEText
 from email.mime.message     import MIMEMessage
 
 def get_options(): #{{{1
-    opts = Options(args='[file...]', width=40)
-    opts.add_option('-s', '--subject', help='Email subject.')
-    opts.add_option('-t', '--to', action='append', help='Email recipient.')
-    opts.add_option('-f', '--sender', help='Email sender')
-    opts.add_option('--cc', action='append', help='Email CC recipient.')
-    opts.add_option('--bcc', action='append', help='Email BCC recipients.')
-    opts.add_option('--body-text', help='Email body (from string).')
-    opts.add_option('--body-file', help='Email body (from file).')
-    opts.add_option('--server', default='localhost', help='SMTP server (default: localhost).')
-    opts.add_option('-p', '--port', type='int', default=25, help='SMTP server port (default: 25).')
-    opts.add_option('-U', '--username', help='SMTP server username.')
-    opts.add_option('-P', '--password', help='SMTP server password.')
-    opts.add_option('--tls', action='store_true', default=False, help='Use TLS with SMTP server')
+    opts = ArgumentParser(description="Command line mail user agent using MIME as the message format.")
+    opts.add_argument('attachments', metavar='FILE', help="a file to attach")
+    opts.add_argument('-s', '--subject', help='Email subject.')
+    opts.add_argument('-t', '--to', action='append', help='Email recipient.')
+    opts.add_argument('-f', '--sender', help='Email sender')
+    opts.add_argument('--cc', action='append', help='Email CC recipient.')
+    opts.add_argument('--bcc', action='append', help='Email BCC recipients.')
+    opts.add_argument('--body-text', help='Email body (from string).')
+    opts.add_argument('--body-file', help='Email body (from file).')
+    opts.add_argument('--server', default='localhost', help='SMTP server (default: localhost).')
+    opts.add_argument('-p', '--port', type=int, default=25, help='SMTP server port (default: 25).')
+    opts.add_argument('-U', '--username', help='SMTP server username.')
+    opts.add_argument('-P', '--password', help='SMTP server password.')
+    opts.add_argument('--tls', action='store_true', default=False, help='Use TLS with SMTP server')
     return opts.parse_args()
 
 def get_username(): #{{{1
@@ -88,7 +89,7 @@ def format_address(value): #{{{1
     return formataddr((encode_header(name), addr.encode('ascii')))
 
 def main(): #{{{1
-    opts, args = get_options()
+    opts = get_options()
     mail = MIMEMail()
     # Determine from what source we will be getting the message body.
     if    opts.body_text: body = opts.body_text
@@ -100,7 +101,7 @@ def main(): #{{{1
     mail.recipients['cc']  = opts.cc
     mail.recipients['bcc'] = opts.bcc
     # Attachments are provided as command line arguments.
-    if args: mail.set_attachments(args)
+    mail.set_attachments(opts.attachments)
     smtp = smtp_session(
             server=opts.server,
             port=opts.port,

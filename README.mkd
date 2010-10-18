@@ -1,9 +1,13 @@
 Installation
 ------------
 
-If you have setuptools installed, you can install MIMEMail with:
+If you have pip installed, you can install with:
 
-    easy_install MIMEMail
+    $ pip install mimemail
+
+If you have setuptools installed, you can install with:
+
+    $ easy_install mimemail
 
 Otherwise, you'll have to download the package and run:
 
