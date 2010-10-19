@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
         name='MIMEMail',
-        version='0.4.3',
+        version='0.4.4',
         description='Command line MUA using the MIME message format.',
         author='Jeremy Cantrell',
         author_email='jmcantrell@gmail.com',
@@ -22,6 +22,7 @@ setup(
             ],
         install_requires=[
             'UnicodeUtils',
+            'ScriptUtils',
             ],
         entry_points={
             'console_scripts': [

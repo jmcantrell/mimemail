@@ -31,7 +31,7 @@ MIMEMail can also be used in other python scripts:
 """ #}}}
 
 import sys, os, mimetypes, smtplib
-from argparse import ArgumentParser
+from scriptutils.arguments import Arguments
 from unicodeutils import decode, encode
 from email.encoders import encode_base64
 from email.header import Header
@@ -45,22 +45,22 @@ from email.mime.multipart   import MIMEMultipart
 from email.mime.text        import MIMEText
 from email.mime.message     import MIMEMessage
 
-def get_options(): #{{{1
-    opts = ArgumentParser(description="Command line mail user agent using MIME as the message format.")
-    opts.add_argument('attachments', metavar='FILE', help="a file to attach")
-    opts.add_argument('-s', '--subject', help='Email subject.')
-    opts.add_argument('-t', '--to', action='append', help='Email recipient.')
-    opts.add_argument('-f', '--sender', help='Email sender')
-    opts.add_argument('--cc', action='append', help='Email CC recipient.')
-    opts.add_argument('--bcc', action='append', help='Email BCC recipients.')
-    opts.add_argument('--body-text', help='Email body (from string).')
-    opts.add_argument('--body-file', help='Email body (from file).')
-    opts.add_argument('--server', default='localhost', help='SMTP server (default: localhost).')
-    opts.add_argument('-p', '--port', type=int, default=25, help='SMTP server port (default: 25).')
-    opts.add_argument('-U', '--username', help='SMTP server username.')
-    opts.add_argument('-P', '--password', help='SMTP server password.')
-    opts.add_argument('--tls', action='store_true', default=False, help='Use TLS with SMTP server')
-    return opts.parse_args()
+def get_arguments(): #{{{1
+    a = Arguments(description="Command line mail user agent using MIME as the message format")
+    a.add_argument('attachments', metavar='FILE', nargs='*', help="a file to attach")
+    a.add_argument('-s', '--subject', help='email subject')
+    a.add_argument('-t', '--to', metavar='ADDRESS', action='append', help='email recipient')
+    a.add_argument('-f', '--sender', metavar='ADDRESS', help='email sender')
+    a.add_argument('--cc', metavar='ADDRESS', action='append', help='email CC recipient')
+    a.add_argument('--bcc', metavar='ADDRESS', action='append', help='email BCC recipients')
+    a.add_argument('--body-text', metavar='TEXT', help='email body (from string)')
+    a.add_argument('--body-file', metavar='FILE', help='email body (from file)')
+    a.add_argument('--server', default='localhost', help='SMTP server (default: localhost)')
+    a.add_argument('-p', '--port', type=int, default=25, help='SMTP server port (default: 25)')
+    a.add_argument('-U', '--username', help='SMTP server username')
+    a.add_argument('-P', '--password', help='SMTP server password')
+    a.add_argument('--tls', action='store_true', default=False, help='use TLS with SMTP server')
+    return a.parse_args()
 
 def get_username(): #{{{1
     if sys.platform.startswith('win'): return
@@ -89,27 +89,27 @@ def format_address(value): #{{{1
     return formataddr((encode_header(name), addr.encode('ascii')))
 
 def main(): #{{{1
-    opts = get_options()
+    args = get_arguments()
     mail = MIMEMail()
     # Determine from what source we will be getting the message body.
-    if    opts.body_text: body = opts.body_text
-    elif  opts.body_file: body = open(opts.body_file).read()
+    if    args.body_text: body = args.body_text
+    elif  args.body_file: body = open(args.body_file).read()
     else:                 body = sys.stdin.read()
     mail.set_body(body)
     # Multiple addresses can be provided as a comma separated string.
-    mail.recipients['to']  = opts.to
-    mail.recipients['cc']  = opts.cc
-    mail.recipients['bcc'] = opts.bcc
+    mail.recipients['to']  = args.to
+    mail.recipients['cc']  = args.cc
+    mail.recipients['bcc'] = args.bcc
     # Attachments are provided as command line arguments.
-    mail.set_attachments(opts.attachments)
+    mail.set_attachments(args.attachments)
     smtp = smtp_session(
-            server=opts.server,
-            port=opts.port,
-            tls=opts.tls,
-            username=opts.username,
-            password=opts.password,
+            server=args.server,
+            port=args.port,
+            tls=args.tls,
+            username=args.username,
+            password=args.password,
             )
-    mail.send(smtp, opts.subject, opts.sender)
+    mail.send(smtp, args.subject, args.sender)
 
 #}}}1
 
