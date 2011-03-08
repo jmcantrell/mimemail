@@ -32,7 +32,7 @@ MIMEMail can also be used in other python scripts:
 
 import sys, os, mimetypes, smtplib
 from scriptutils.arguments import Arguments
-from unicodeutils import decode, encode
+from unicodeutils import decode
 from email.encoders import encode_base64
 from email.header import Header
 from email.utils import parseaddr, formataddr
