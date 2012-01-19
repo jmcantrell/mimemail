@@ -28,9 +28,12 @@ MIMEMail can also be used in other python scripts:
     mail.set_attachments(['stuff.zip', 'image.png'])
     mail.send(subject="Here's Your Stuff")
 
-""" #}}}
+"""  # }}}
 
-import sys, os, mimetypes, smtplib
+import sys
+import os
+import mimetypes
+import smtplib
 from scriptutils.arguments import Arguments
 from unicodeutils import decode
 from email.encoders import encode_base64
@@ -45,29 +48,49 @@ from email.mime.multipart   import MIMEMultipart
 from email.mime.text        import MIMEText
 from email.mime.message     import MIMEMessage
 
-def get_arguments(): #{{{1
-    a = Arguments(description="Command line mail user agent using MIME as the message format")
-    a.add_argument('attachments', metavar='FILE', nargs='*', help="a file to attach")
-    a.add_argument('-s', '--subject', help='email subject')
-    a.add_argument('-t', '--to', metavar='ADDRESS', action='append', help='email recipient')
-    a.add_argument('-f', '--sender', metavar='ADDRESS', help='email sender')
-    a.add_argument('--cc', metavar='ADDRESS', action='append', help='email CC recipient')
-    a.add_argument('--bcc', metavar='ADDRESS', action='append', help='email BCC recipients')
-    a.add_argument('--body-text', metavar='TEXT', help='email body (from string)')
-    a.add_argument('--body-file', metavar='FILE', help='email body (from file)')
-    a.add_argument('--server', default='localhost', help='SMTP server (default: localhost)')
-    a.add_argument('-p', '--port', type=int, default=25, help='SMTP server port (default: 25)')
-    a.add_argument('-U', '--username', help='SMTP server username')
-    a.add_argument('-P', '--password', help='SMTP server password')
-    a.add_argument('--tls', action='store_true', default=False, help='use TLS with SMTP server')
+
+def get_arguments():  # {{{1
+    a = Arguments(
+            description="Command line mail user agent " +
+                        "using MIME as the message format")
+    a.add_argument('attachments', metavar='FILE', nargs='*',
+            help="a file to attach")
+    a.add_argument('-s', '--subject',
+            help='email subject')
+    a.add_argument('-t', '--to', metavar='ADDRESS', action='append',
+            help='email recipient')
+    a.add_argument('-f', '--sender', metavar='ADDRESS',
+            help='email sender')
+    a.add_argument('--cc', metavar='ADDRESS', action='append',
+            help='email CC recipient')
+    a.add_argument('--bcc', metavar='ADDRESS', action='append',
+            help='email BCC recipients')
+    a.add_argument('--body-text', metavar='TEXT',
+            help='email body (from string)')
+    a.add_argument('--body-file', metavar='FILE',
+            help='email body (from file)')
+    a.add_argument('--server', default='localhost',
+            help='SMTP server (default: localhost)')
+    a.add_argument('-p', '--port', type=int, default=25,
+            help='SMTP server port (default: 25)')
+    a.add_argument('-U', '--username',
+            help='SMTP server username')
+    a.add_argument('-P', '--password',
+            help='SMTP server password')
+    a.add_argument('--tls', action='store_true', default=False,
+            help='use TLS with SMTP server')
     return a.parse_args()
 
-def get_username(): #{{{1
-    if sys.platform.startswith('win'): return
+
+def get_username():  # {{{1
+    if sys.platform.startswith('win'):
+        return
     import pwd
     return pwd.getpwuid(os.geteuid())[0]
 
-def smtp_session(server='localhost', port=25, tls=False, username=None, password=None): #{{{1
+
+def smtp_session(server='localhost', port=25,  # {{{1
+        tls=False, username=None, password=None):
     session = smtplib.SMTP(server, port)
     if tls:
         session.ehlo()
@@ -77,28 +100,34 @@ def smtp_session(server='localhost', port=25, tls=False, username=None, password
         session.login(username, password)
     return session
 
-def encode_header(value): #{{{1
+
+def encode_header(value):  # {{{1
     """Creates a string that's properly encoded for use in an email header."""
     return str(Header(unicode(value), 'iso-8859-1'))
 
-def format_address(value): #{{{1
+
+def format_address(value):  # {{{1
     """Properly formats email addresses."""
     if type(value) in (tuple, list):
         return ', '.join([format_address(v) for v in value])
     name, addr = parseaddr(value)
     return formataddr((encode_header(name), addr.encode('ascii')))
 
-def main(): #{{{1
+
+def main():  # {{{1
     args = get_arguments()
     mail = MIMEMail()
     # Determine from what source we will be getting the message body.
-    if    args.body_text: body = args.body_text
-    elif  args.body_file: body = open(args.body_file).read()
-    else:                 body = sys.stdin.read()
+    if args.body_text:
+        body = args.body_text
+    elif args.body_file:
+        body = open(args.body_file).read()
+    else:
+        body = sys.stdin.read()
     mail.set_body(body)
     # Multiple addresses can be provided as a comma separated string.
-    mail.recipients['to']  = args.to
-    mail.recipients['cc']  = args.cc
+    mail.recipients['to'] = args.to
+    mail.recipients['cc'] = args.cc
     mail.recipients['bcc'] = args.bcc
     # Attachments are provided as command line arguments.
     mail.set_attachments(args.attachments)
@@ -113,7 +142,8 @@ def main(): #{{{1
 
 #}}}1
 
-class MIMEMail(object): #{{{1
+
+class MIMEMail(object):  # {{{1
 
     def __init__(self):
         self.message = MIMEMultipart()
@@ -124,7 +154,8 @@ class MIMEMail(object): #{{{1
         body = decode(body)
         for body_charset in 'ascii', 'iso-8859-1', 'utf-8':
             try:
-                body = MIMEText(body.encode(body_charset), 'plain', body_charset)
+                body = MIMEText(body.encode(body_charset),
+                        'plain', body_charset)
             except UnicodeError:
                 pass
             else:
@@ -141,15 +172,18 @@ class MIMEMail(object): #{{{1
         self.set_recipients(recipients, 'bcc')
 
     def set_recipients(self, recipients, key=None):
-        if not key: key = 'to'
+        if not key:
+            key = 'to'
         key = key.lower()
         if key not in self.recipient_types:
             raise MIMEMailError("Invalid recipient type")
-        if type(recipients) not in (tuple, list): recipients = [recipients]
+        if type(recipients) not in (tuple, list):
+            recipients = [recipients]
         self.recipients[key] = recipients
 
     def set_attachments(self, paths):
-        if type(paths) not in (tuple, list): paths = [paths]
+        if type(paths) not in (tuple, list):
+            paths = [paths]
         for path in paths:
             ctype, encoding = mimetypes.guess_type(path)
             if ctype is None or encoding is not None:
@@ -173,8 +207,10 @@ class MIMEMail(object): #{{{1
             self.message.attach(attachment)
 
     def send(self, smtp=None, subject='', sender=None):
-        if not smtp: smtp = smtp_session()
-        if not sender: sender = get_username()
+        if not smtp:
+            smtp = smtp_session()
+        if not sender:
+            sender = get_username()
         if 'to' in self.recipients:
             self.message['To'] = format_address(self.recipients['to'])
         if 'cc' in self.recipients:
@@ -187,10 +223,12 @@ class MIMEMail(object): #{{{1
         recipients = sum((r for r in self.recipients.values() if r), [])
         smtp.sendmail(sender, recipients, self.message.as_string())
 
-
-
-class MIMEMailError(Exception): pass #{{{1
-
 #}}}1
 
-if __name__ == '__main__': main()
+
+class MIMEMailError(Exception):
+    pass
+
+
+if __name__ == '__main__':
+    main()
