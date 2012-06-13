@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# DESCRIPTION {{{
-
 """Command line mail user agent using MIME as the message format.
 
 The message body is given over stdin, as a string (--body-text), or as a
@@ -28,12 +26,9 @@ MIMEMail can also be used in other python scripts:
     mail.set_attachments(['stuff.zip', 'image.png'])
     mail.send(subject="Here's Your Stuff")
 
-"""  # }}}
+"""
 
-import sys
-import os
-import mimetypes
-import smtplib
+import sys, os, mimetypes, smtplib
 from scriptutils.arguments import Arguments
 from unicodeutils import decode
 from email.encoders import encode_base64
@@ -50,35 +45,20 @@ from email.mime.message     import MIMEMessage
 
 
 def get_arguments():  # {{{1
-    a = Arguments(
-            description="Command line mail user agent " +
-                        "using MIME as the message format")
-    a.add_argument('attachments', metavar='FILE', nargs='*',
-            help="a file to attach")
-    a.add_argument('-s', '--subject',
-            help='email subject')
-    a.add_argument('-t', '--to', metavar='ADDRESS', action='append',
-            help='email recipient')
-    a.add_argument('-f', '--sender', metavar='ADDRESS',
-            help='email sender')
-    a.add_argument('--cc', metavar='ADDRESS', action='append',
-            help='email CC recipient')
-    a.add_argument('--bcc', metavar='ADDRESS', action='append',
-            help='email BCC recipients')
-    a.add_argument('--body-text', metavar='TEXT',
-            help='email body (from string)')
-    a.add_argument('--body-file', metavar='FILE',
-            help='email body (from file)')
-    a.add_argument('--server', default='localhost',
-            help='SMTP server (default: localhost)')
-    a.add_argument('-p', '--port', type=int, default=25,
-            help='SMTP server port (default: 25)')
-    a.add_argument('-U', '--username',
-            help='SMTP server username')
-    a.add_argument('-P', '--password',
-            help='SMTP server password')
-    a.add_argument('--tls', action='store_true', default=False,
-            help='use TLS with SMTP server')
+    a = Arguments(description="Command line mail user agent using MIME as the message format")
+    a.add_argument('attachments', metavar='FILE', nargs='*', help="a file to attach")
+    a.add_argument('-s', '--subject', help='email subject')
+    a.add_argument('-t', '--to', metavar='ADDRESS', action='append', help='email recipient')
+    a.add_argument('-f', '--sender', metavar='ADDRESS', help='email sender')
+    a.add_argument('--cc', metavar='ADDRESS', action='append', help='email CC recipient')
+    a.add_argument('--bcc', metavar='ADDRESS', action='append', help='email BCC recipients')
+    a.add_argument('--body-text', metavar='TEXT', help='email body (from string)')
+    a.add_argument('--body-file', metavar='FILE', help='email body (from file)')
+    a.add_argument('--server', default='localhost', help='SMTP server (default: localhost)')
+    a.add_argument('-p', '--port', type=int, default=25, help='SMTP server port (default: 25)')
+    a.add_argument('-U', '--username', help='SMTP server username')
+    a.add_argument('-P', '--password', help='SMTP server password')
+    a.add_argument('--tls', action='store_true', default=False, help='use TLS with SMTP server')
     return a.parse_args()
 
 
@@ -140,8 +120,6 @@ def main():  # {{{1
             )
     mail.send(smtp, args.subject, args.sender)
 
-#}}}1
-
 
 class MIMEMail(object):  # {{{1
 
@@ -192,10 +170,10 @@ class MIMEMail(object):  # {{{1
             data = open(path, 'rb').read()
             try:
                 attachment = {
-                        'text':        MIMEText,
-                        'image':       MIMEImage,
-                        'audio':       MIMEAudio,
-                        'message':     MIMEMessage,
+                        'text': MIMEText,
+                        'image': MIMEImage,
+                        'audio': MIMEAudio,
+                        'message': MIMEMessage,
                         'application': MIMEApplication,
                         }[maintype](data, subtype)
             except KeyError:
@@ -223,12 +201,11 @@ class MIMEMail(object):  # {{{1
         recipients = sum((r for r in self.recipients.values() if r), [])
         smtp.sendmail(sender, recipients, self.message.as_string())
 
-#}}}1
 
-
-class MIMEMailError(Exception):
+class MIMEMailError(Exception):  # {{{1
     pass
 
+# }}}1
 
 if __name__ == '__main__':
     main()
