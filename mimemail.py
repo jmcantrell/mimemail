@@ -132,8 +132,7 @@ class MIMEMail(object):  # {{{1
         body = decode(body)
         for body_charset in 'ascii', 'iso-8859-1', 'utf-8':
             try:
-                body = MIMEText(body.encode(body_charset),
-                        'plain', body_charset)
+                body = MIMEText(body.encode(body_charset), 'plain', body_charset)
             except UnicodeError:
                 pass
             else:
@@ -180,8 +179,7 @@ class MIMEMail(object):  # {{{1
                 attachment = MIMEBase(maintype, subtype)
                 attachment.set_payload(data)
                 encode_base64(attachment)
-            attachment.add_header('Content-Disposition', 'attachment',
-                    filename=os.path.basename(path))
+            attachment.add_header('Content-Disposition', 'attachment', filename=os.path.basename(path))
             self.message.attach(attachment)
 
     def send(self, smtp=None, subject='', sender=None):
