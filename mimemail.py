@@ -44,7 +44,7 @@ from email.mime.text        import MIMEText
 from email.mime.message     import MIMEMessage
 
 
-def get_arguments():  # {{{1
+def get_arguments():
     a = Arguments(description="Command line mail user agent using MIME as the message format")
     a.add_argument('attachments', metavar='FILE', nargs='*', help="a file to attach")
     a.add_argument('-s', '--subject', help='email subject')
@@ -62,15 +62,14 @@ def get_arguments():  # {{{1
     return a.parse_args()
 
 
-def get_username():  # {{{1
+def get_username():
     if sys.platform.startswith('win'):
         return
     import pwd
     return pwd.getpwuid(os.geteuid())[0]
 
 
-def smtp_session(server='localhost', port=25,  # {{{1
-        tls=False, username=None, password=None):
+def smtp_session(server='localhost', port=25, tls=False, username=None, password=None):
     session = smtplib.SMTP(server, port)
     if tls:
         session.ehlo()
@@ -81,12 +80,12 @@ def smtp_session(server='localhost', port=25,  # {{{1
     return session
 
 
-def encode_header(value):  # {{{1
+def encode_header(value):
     """Creates a string that's properly encoded for use in an email header."""
     return str(Header(unicode(value), 'iso-8859-1'))
 
 
-def format_address(value):  # {{{1
+def format_address(value):
     """Properly formats email addresses."""
     if type(value) in (tuple, list):
         return ', '.join([format_address(v) for v in value])
@@ -94,7 +93,7 @@ def format_address(value):  # {{{1
     return formataddr((encode_header(name), addr.encode('ascii')))
 
 
-def main():  # {{{1
+def main():
     args = get_arguments()
     mail = MIMEMail()
     # Determine from what source we will be getting the message body.
@@ -121,7 +120,7 @@ def main():  # {{{1
     mail.send(smtp, args.subject, args.sender)
 
 
-class MIMEMail(object):  # {{{1
+class MIMEMail(object):
 
     def __init__(self):
         self.message = MIMEMultipart()
@@ -200,10 +199,8 @@ class MIMEMail(object):  # {{{1
         smtp.sendmail(sender, recipients, self.message.as_string())
 
 
-class MIMEMailError(Exception):  # {{{1
+class MIMEMailError(Exception):
     pass
-
-# }}}1
 
 if __name__ == '__main__':
     main()
