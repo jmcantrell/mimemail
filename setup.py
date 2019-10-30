@@ -5,7 +5,7 @@ from setuptools import setup
 setup(
 
     name='mimemail',
-    version='0.4.6',
+    version='0.4.7',
 
     description='Command line MUA using the MIME message format.',
 
